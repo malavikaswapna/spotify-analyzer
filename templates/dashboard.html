@@ -1,0 +1,409 @@
+
+{% extends "base.html" %}
+
+{% block title %}Spotify Listening Pattern Analyzer - Dashboard{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Your Listening Dashboard</h1>
+
+<!-- Listening Patterns Section -->
+<h2 class="mb-3">Listening Patterns</h2>
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">When You Listen</div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="listeningByHourChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Days You Listen Most</div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="listeningByDayChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Genre and Mood Section -->
+<h2 class="mb-3 mt-5">Genres & Mood</h2>
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Top Genres</div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="genreDistributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Mood Distribution</div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="moodDistributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Audio Features Section -->
+<h2 class="mb-3 mt-5">Audio Features</h2>
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Your Audio Profile</div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="audioFeaturesRadarChart"></canvas>
+                </div>
+            </div>
+            <div class="card-footer">
+                <small class="text-muted">
+                    <strong>Danceability:</strong> How suitable a track is for dancing<br>
+                    <strong>Energy:</strong> Intensity and activity level<br>
+                    <strong>Valence:</strong> Musical positiveness (happy, cheerful)<br>
+                    <strong>Acousticness:</strong> Whether the track is acoustic<br>
+                    <strong>Instrumentalness:</strong> Whether a track contains vocals<br>
+                    <strong>Speechiness:</strong> Presence of spoken words<br>
+                    <strong>Liveness:</strong> Presence of an audience
+                </small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Track Clustering</div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="trackClusteringChart"></canvas>
+                </div>
+            </div>
+            <div class="card-footer">
+                <small class="text-muted">
+                    Tracks clustered by audio features using machine learning.
+                    Tracks that sound similar are grouped together.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Network Visualizations Section -->
+<h2 class="mb-3 mt-5">Networks</h2>
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Artist Connections</div>
+            <div class="card-body">
+                <div class="network-container" id="artistNetworkViz"></div>
+            </div>
+            <div class="card-footer">
+                <small class="text-muted">
+                    Network of connections between your top artists.
+                    Artists are connected if they share genres.
+                </small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Genre Map</div>
+            <div class="card-body">
+                <div class="network-container" id="genreNetworkViz"></div>
+            </div>
+            <div class="card-footer">
+                <small class="text-muted">
+                    Network of connections between your top genres.
+                    Genres are connected if they appear together for the same artists.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize charts when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Chart.js configuration
+        const chartConfigs = {{ chart_configs|tojson }};
+        const networkConfigs = {{ network_configs|tojson }};
+        
+        // Initialize Chart.js charts
+        for (const [chartId, config] of Object.entries(chartConfigs)) {
+            const ctx = document.getElementById(chartId);
+            if (ctx) {
+                new Chart(ctx, config);
+            }
+        }
+        
+        // Initialize Track Clustering Scatter Plot
+        if (chartConfigs.hasOwnProperty('trackClusteringData')) {
+            const clusteringData = chartConfigs.trackClusteringData;
+            const clusterCtx = document.getElementById('trackClusteringChart');
+            
+            if (clusterCtx) {
+                new Chart(clusterCtx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: clusteringData.map((cluster, index) => ({
+                            label: `Cluster ${index + 1}`,
+                            data: cluster.tracks,
+                            backgroundColor: cluster.color,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        }))
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Track Clustering by Audio Features'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const track = context.raw;
+                                        return `${track.name} - ${track.artist}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Component 1'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Component 2'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Initialize D3.js network visualizations
+        initializeArtistNetwork();
+        initializeGenreNetwork();
+        
+        function initializeArtistNetwork() {
+            if (!networkConfigs.hasOwnProperty('artistNetwork')) return;
+            
+            const artistNetwork = networkConfigs.artistNetwork;
+            const container = document.getElementById('artistNetworkViz');
+            
+            if (!container) return;
+            
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            
+            const svg = d3.select(container)
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+            
+            // Create force simulation
+            const simulation = d3.forceSimulation(artistNetwork.nodes)
+                .force('link', d3.forceLink(artistNetwork.links).id(d => d.id).distance(100))
+                .force('charge', d3.forceManyBody().strength(-300))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collision', d3.forceCollide().radius(30));
+            
+            // Create links
+            const link = svg.append('g')
+                .attr('class', 'links')
+                .selectAll('line')
+                .data(artistNetwork.links)
+                .enter()
+                .append('line')
+                .attr('stroke', '#555')
+                .attr('stroke-opacity', 0.6)
+                .attr('stroke-width', d => Math.sqrt(d.weight));
+            
+            // Create nodes
+            const node = svg.append('g')
+                .attr('class', 'nodes')
+                .selectAll('g')
+                .data(artistNetwork.nodes)
+                .enter()
+                .append('g');
+            
+            // Add circles to nodes
+            node.append('circle')
+                .attr('r', d => 5 + Math.sqrt(d.popularity) / 2)
+                .attr('fill', '#1DB954')
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 1.5);
+            
+            // Add labels to nodes
+            node.append('text')
+                .text(d => d.name)
+                .attr('x', 10)
+                .attr('y', 3)
+                .attr('fill', '#fff')
+                .style('font-size', '10px');
+            
+            // Add tooltips
+            node.append('title')
+                .text(d => `${d.name}
+Popularity: ${d.popularity}
+Genres: ${d.genres.join(', ')}`);
+            
+            // Update positions on simulation tick
+            simulation.on('tick', () => {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+                
+                node
+                    .attr('transform', d => `translate(${d.x},${d.y})`);
+            });
+            
+            // Add drag behavior
+            node.call(d3.drag()
+                .on('start', dragstarted)
+                .on('drag', dragged)
+                .on('end', dragended));
+            
+            function dragstarted(event, d) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            }
+            
+            function dragged(event, d) {
+                d.fx = event.x;
+                d.fy = event.y;
+            }
+            
+            function dragended(event, d) {
+                if (!event.active) simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            }
+        }
+        
+        function initializeGenreNetwork() {
+            if (!networkConfigs.hasOwnProperty('genreNetwork')) return;
+            
+            const genreNetwork = networkConfigs.genreNetwork;
+            const container = document.getElementById('genreNetworkViz');
+            
+            if (!container) return;
+            
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            
+            const svg = d3.select(container)
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+            
+            // Create force simulation
+            const simulation = d3.forceSimulation(genreNetwork.nodes)
+                .force('link', d3.forceLink(genreNetwork.links).id(d => d.id).distance(100))
+                .force('charge', d3.forceManyBody().strength(-200))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collision', d3.forceCollide().radius(30));
+            
+            // Create links
+            const link = svg.append('g')
+                .attr('class', 'links')
+                .selectAll('line')
+                .data(genreNetwork.links)
+                .enter()
+                .append('line')
+                .attr('stroke', '#555')
+                .attr('stroke-opacity', 0.6)
+                .attr('stroke-width', d => Math.sqrt(d.weight));
+            
+            // Create a color scale for genres
+            const color = d3.scaleOrdinal(d3.schemeCategory10);
+            
+            // Create nodes
+            const node = svg.append('g')
+                .attr('class', 'nodes')
+                .selectAll('g')
+                .data(genreNetwork.nodes)
+                .enter()
+                .append('g');
+            
+            // Add circles to nodes
+            node.append('circle')
+                .attr('r', d => 5 + Math.sqrt(d.count))
+                .attr('fill', (_, i) => color(i % 10))
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 1.5);
+            
+            // Add labels to nodes
+            node.append('text')
+                .text(d => d.id)
+                .attr('x', 10)
+                .attr('y', 3)
+                .attr('fill', '#fff')
+                .style('font-size', '10px');
+            
+            // Add tooltips
+            node.append('title')
+                .text(d => `${d.id}
+Count: ${d.count}`);
+            
+            // Update positions on simulation tick
+            simulation.on('tick', () => {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+                
+                node
+                    .attr('transform', d => `translate(${d.x},${d.y})`);
+            });
+            
+            // Add drag behavior
+            node.call(d3.drag()
+                .on('start', dragstarted)
+                .on('drag', dragged)
+                .on('end', dragended));
+            
+            function dragstarted(event, d) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            }
+            
+            function dragged(event, d) {
+                d.fx = event.x;
+                d.fy = event.y;
+            }
+            
+            function dragended(event, d) {
+                if (!event.active) simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            }
+        }
+    });
+</script>
+{% endblock %}
+        

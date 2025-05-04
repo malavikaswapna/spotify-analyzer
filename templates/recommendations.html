@@ -1,0 +1,246 @@
+
+{% extends "base.html" %}
+
+{% block title %}Spotify Listening Pattern Analyzer - Recommendations{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Your Music Recommendations</h1>
+
+<!-- Recommendations based on top tracks -->
+<section class="mb-5">
+    <h2 class="mb-3">Based on Your Top Tracks</h2>
+    <div class="row">
+        {% for rec in recommendations.top_tracks_medium_term[:8] %}
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card recommendation-card">
+                <!-- In recommendations.html for album covers -->
+                <img src="{{ rec.album_cover_url if rec.album_cover_url else '/static/images/albums/blinding.png' }}" 
+                     class="recommendation-img" 
+                     alt="{{ rec.name }}"
+                     onerror="this.src='/static/images/albums/blinding.png'">
+                <div class="card-body">
+                    <h5 class="card-title text-truncate">{{ rec.name }}</h5>
+                    <p class="card-text text-truncate">{{ rec.artist }}</p>
+                    <a href="https://open.spotify.com/track/{{ rec.id }}" target="_blank" class="btn btn-sm btn-spotify w-100">
+                        <i class="fab fa-spotify me-1"></i> Listen
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Recommendations based on mood -->
+<section class="mb-5">
+    <h2 class="mb-3">Based on Mood</h2>
+    
+    <!-- Mood Tabs -->
+    <ul class="nav nav-tabs mb-3" id="moodTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="happy-tab" data-bs-toggle="tab" data-bs-target="#happy" type="button" role="tab">
+                Happy/Euphoric
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="calm-tab" data-bs-toggle="tab" data-bs-target="#calm" type="button" role="tab">
+                Calm/Peaceful
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="angry-tab" data-bs-toggle="tab" data-bs-target="#angry" type="button" role="tab">
+                Angry/Intense
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="sad-tab" data-bs-toggle="tab" data-bs-target="#sad" type="button" role="tab">
+                Sad/Depressed
+            </button>
+        </li>
+    </ul>
+    
+    <!-- Mood Tab Contents -->
+    <div class="tab-content" id="moodTabContent">
+        <!-- Happy/Euphoric -->
+        <div class="tab-pane fade show active" id="happy" role="tabpanel" aria-labelledby="happy-tab">
+            <div class="row">
+                {% for rec in recommendations.mood_Happy_Euphoric[:8] %}
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="card recommendation-card">
+                        <!-- For Happy/Euphoric section -->
+                        <img src="{{ rec.album_cover_url if rec.album_cover_url else '/static/images/moods/happy.png' }}" 
+                             class="recommendation-img" 
+                             alt="{{ rec.name }}"
+                             onerror="this.src='/static/images/moods/happy.png'">    
+                        <div class="card-body">
+                            <h5 class="card-title text-truncate">{{ rec.name }}</h5>
+                            <p class="card-text text-truncate">{{ rec.artist }}</p>
+                            <a href="https://open.spotify.com/track/{{ rec.id }}" target="_blank" class="btn btn-sm btn-spotify w-100">
+                                <i class="fab fa-spotify me-1"></i> Listen
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Calm/Peaceful -->
+        <div class="tab-pane fade" id="calm" role="tabpanel" aria-labelledby="calm-tab">
+            <div class="row">
+                {% for rec in recommendations.mood_Calm_Peaceful[:8] %}
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="card recommendation-card">
+                        <img src="{{ rec.album_cover_url if rec.album_cover_url else '/static/images/moods/calm.png' }}" 
+                             class="recommendation-img" 
+                             alt="{{ rec.name }}"
+                             onerror="this.src='/static/images/moods/calm.png'"> 
+                        <div class="card-body">
+                            <h5 class="card-title text-truncate">{{ rec.name }}</h5>
+                            <p class="card-text text-truncate">{{ rec.artist }}</p>
+                            <a href="https://open.spotify.com/track/{{ rec.id }}" target="_blank" class="btn btn-sm btn-spotify w-100">
+                                <i class="fab fa-spotify me-1"></i> Listen
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Angry/Intense -->
+        <div class="tab-pane fade" id="angry" role="tabpanel" aria-labelledby="angry-tab">
+            <div class="row">
+                {% for rec in recommendations.mood_Angry_Intense[:8] %}
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="card recommendation-card">
+                        <img src="{{ rec.album_cover_url if rec.album_cover_url else '/static/images/moods/angry.png' }}" 
+                             class="recommendation-img" 
+                             alt="{{ rec.name }}"
+                             onerror="this.src='/static/images/moods/angry.png'"> 
+                        <div class="card-body">
+                            <h5 class="card-title text-truncate">{{ rec.name }}</h5>
+                            <p class="card-text text-truncate">{{ rec.artist }}</p>
+                            <a href="https://open.spotify.com/track/{{ rec.id }}" target="_blank" class="btn btn-sm btn-spotify w-100">
+                                <i class="fab fa-spotify me-1"></i> Listen
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Sad/Depressed -->
+        <div class="tab-pane fade" id="sad" role="tabpanel" aria-labelledby="sad-tab">
+            <div class="row">
+                {% for rec in recommendations.mood_Sad_Depressed[:8] %}
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="card recommendation-card">
+                        <img src="{{ rec.album_cover_url if rec.album_cover_url else '/static/images/moods/sad.png' }}" 
+                             class="recommendation-img" 
+                             alt="{{ rec.name }}"
+                             onerror="this.src='/static/images/moods/sad.png'"> 
+                        <div class="card-body">
+                            <h5 class="card-title text-truncate">{{ rec.name }}</h5>
+                            <p class="card-text text-truncate">{{ rec.artist }}</p>
+                            <a href="https://open.spotify.com/track/{{ rec.id }}" target="_blank" class="btn btn-sm btn-spotify w-100">
+                                <i class="fab fa-spotify me-1"></i> Listen
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Recommendations based on genres -->
+<section class="mb-5">
+    <h2 class="mb-3">Based on Your Favorite Genres</h2>
+    <div class="row">
+        {% for rec in recommendations.genres[:8] %}
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card recommendation-card">
+                <img src="{{ rec.album_cover_url if rec.album_cover_url else '/static/images/genres/default.png' }}" 
+                     class="recommendation-img" 
+                     alt="{{ rec.name }}"
+                     onerror="this.src='/static/images/genres/default.png'">
+                <div class="card-body">
+                    <h5 class="card-title text-truncate">{{ rec.name }}</h5>
+                    <p class="card-text text-truncate">{{ rec.artist }}</p>
+                    <a href="https://open.spotify.com/track/{{ rec.id }}" target="_blank" class="btn btn-sm btn-spotify w-100">
+                        <i class="fab fa-spotify me-1"></i> Listen
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Recommendations based on audio features -->
+<section class="mb-5">
+    <h2 class="mb-3">Based on Your Audio Profile</h2>
+    <div class="row">
+        {% for rec in recommendations.audio_features[:8] %}
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card recommendation-card">
+                <img src="{{ rec.album_cover_url if rec.album_cover_url else '/static/images/features/default.png' }}" 
+                     class="recommendation-img" 
+                     alt="{{ rec.name }}"
+                     onerror="this.src='/static/images/features/default.png'">
+                <div class="card-body">
+                    <h5 class="card-title text-truncate">{{ rec.name }}</h5>
+                    <p class="card-text text-truncate">{{ rec.artist }}</p>
+                    <a href="https://open.spotify.com/track/{{ rec.id }}" target="_blank" class="btn btn-sm btn-spotify w-100">
+                        <i class="fab fa-spotify me-1"></i> Listen
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Enable Bootstrap tabs
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabElements = document.querySelectorAll('#moodTabs .nav-link');
+        // Enable Bootstrap tabs
+        tabElements.forEach(function(tabEl) {
+            const tabTrigger = new bootstrap.Tab(tabEl);
+
+            tabEl.addEventListener('click', function(event) {
+                event.preventDefault();
+                
+                tabElements.forEach(tab => {
+                    tab.classList.remove('active');
+                });
+
+                this.classList.add('active');
+
+                tabTrigger.show();
+            });
+        });
+
+        const activeTab = document.querySelector('#happy-tab');
+        if (activeTab) {
+            activeTab.classList.add('active');
+        }
+
+        const triggerTabList = [].slice.call(document.querySelectorAll('#moodTabs button'));
+        triggerTabList.forEach(function(triggerEl) {
+            const tabTrigger = new bootstrap.Tab(triggerEl);
+            triggerEl.addEventListener('click', function(event) {
+                event.preventDefault();
+                tabTrigger.show();
+            });
+        });
+    });
+</script>
+{% endblock %}
+        
